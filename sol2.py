@@ -1,31 +1,13 @@
 import numpy as np
 import imageio as im
-import matplotlib.pyplot as plt
 import scipy as si
 from scipy import signal
 from scipy.ndimage.interpolation import map_coordinates
-import ex2_helper as he
 from scipy.io import wavfile as sci_io
-import skimage.color as ski
 from skimage.color import rgb2gray
 GRAY_SCALE=2
 RGB=3
 MAX_PIXEL=255
-def read_image(filename, representation):
-    #the function will read an image file and return a normalizes array of
-    # its intesitys
-    image=im.imread(filename).astype(np.float64)
-    if np.amax(image)>1:
-        image=image.astype(np.float64)/MAX_PIXEL
-    if representation==2 and image.ndim!=GRAY_SCALE:#return RGB from RGB file
-        return image
-    elif representation==1 and image.ndim==RGB:#return grayscale from RGB file
-        return rgb2gray(image)
-    elif representation==1 and image.ndim==GRAY_SCALE: #return grayscale from
-        # grayscale file
-        return image
-
-
 
 ##section 1
 def DFT(signal):
@@ -103,16 +85,16 @@ def resize(data, ratio):
     return new_signal.reshape(len(new_signal),)
 
 def resize_spectrogram(data,ratio):
-    stft_mat = he.stft(data)
+    stft_mat = stft(data)
     new_stft_mat = np.zeros(((len(stft_mat[:, 1])), int(len(stft_mat[1,:])/ratio)))
     for i in range(len(stft_mat[:,1])):
         new_stft_mat[i,:]=resize(stft_mat[i,:],ratio)
-    new_data=he.istft(new_stft_mat)
+    new_data=istft(new_stft_mat)
     return new_data
 def resize_vocoder(data, ratio):
-    stft_mat=he.stft(data)
-    stft_vecode=he.phase_vocoder(stft_mat,ratio)
-    new_data=he.istft(stft_vecode)
+    stft_mat=stft(data)
+    stft_vecode=phase_vocoder(stft_mat,ratio)
+    new_data=istft(stft_vecode)
     return new_data
 
 ##section 3.1
@@ -123,19 +105,40 @@ def conv_der(im):
     dy=si.signal.convolve2d(im, dy_op, 'same')
     magnitude = np.sqrt(np.abs(dx) ** 2 + np.abs(dy) ** 2)
     return magnitude
+##section 3.2
 def fourier_der(im):
     im_dft=DFT2(im)
     im_dft_shift=np.fft.fftshift(im_dft)
     u_len=im.shape[0]#u axes len
     v_len = im.shape[1]#v axes len
-    u_axes=np.arange(-int(u_len/2),int(u_len/2))*2j*np.pi/u_len# u axes
-    Fourier_der_u=np.transpose(np.transpose(im_dft_shift.reshape(u_len,v_len))*u_axes)
-    dx=IDFT2(Fourier_der_u)#div of x
-    v_axes=np.arange(-int(v_len/2),int(v_len/2))*2j*np.pi/v_len
+    if v_len % 2==0:
+        v_axes=np.arange(-int(v_len/2),int(v_len/2))*2j*np.pi/v_len
+    else:
+        v_axes = np.arange(-int(v_len / 2),int(v_len / 2)+1) * 2j * np.pi / v_len
     Fourier_der_v=im_dft_shift.reshape(u_len,v_len)*v_axes
     dy=IDFT2(Fourier_der_v)# div o y
+    if u_len % 2 == 0:
+        u_axes = np.arange(-int(u_len / 2),int(u_len / 2)) * 2j * np.pi / u_len
+    else:
+        u_axes = np.arange(-int(u_len / 2), int(u_len / 2) + 1) * 2j * np.pi / u_len
+    Fourier_der_u=np.transpose(np.transpose(im_dft_shift.reshape(u_len,v_len))*u_axes)
+    dx=IDFT2(Fourier_der_u)#div of x
     magnitude = np.sqrt(np.abs(dx) ** 2 + np.abs(dy) ** 2)
     return magnitude.reshape(u_len,v_len)
+##ex2 helper
+def read_image(filename, representation):
+    #the function will read an image file and return a normalizes array of
+    # its intesitys
+    image=im.imread(filename).astype(np.float64)
+    if np.amax(image)>1:
+        image=image.astype(np.float64)/MAX_PIXEL
+    if representation==2 and image.ndim!=GRAY_SCALE:#return RGB from RGB file
+        return image
+    elif representation==1 and image.ndim==RGB:#return grayscale from RGB file
+        return rgb2gray(image)
+    elif representation==1 and image.ndim==GRAY_SCALE: #return grayscale from
+        # grayscale file
+        return image
 
 def stft(y, win_length=640, hop_length=160):
     fft_window = signal.windows.hann(win_length, False)
@@ -200,17 +203,4 @@ def phase_vocoder(spec, ratio):
 
     return warped_spec
 
-#im=read_image('monkey.jpg',1)
-#size2=conv_der(im)
-#size=fourier_der(im)
-#print(size.shape,im.shape)
-#plt.imshow(size,cmap='gray')
-#plt.show()
-#plt.imshow(size2,cmap='gray')
-#plt.show()
-#sample,data=sci_io.read('my_sound.wav')
-#new_data=resize_vocoder(data,1.25).astype('int16')
-#new_da=resize_spectrogram(data,1.25).astype('int16')
-#sci_io.write('change_spect1.wav.',sample,new_da)
-#sci_io.write('change_vecode1.wav.',sample,new_data)
 
