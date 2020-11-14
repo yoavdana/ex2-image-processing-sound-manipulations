@@ -31,9 +31,7 @@ def read_image(filename, representation):
 def DFT(signal):
     ##calculate the fourier transform for 1D signal
     dft_mat=DFT_mat(len(signal))
-    T_signal=signal.reshape(1,len(signal))
-    F_u=T_signal.dot(dft_mat)
-    F_u=F_u.reshape(len(signal),1)
+    F_u=signal.dot(dft_mat)
     return F_u
 def DFT_mat(N):
     ##generate the DFT matrix for 1D signal
@@ -43,10 +41,9 @@ def DFT_mat(N):
 def IDFT(fourier_signal):
     ##calculate the inverse fourier transform for 1D signal
     N=len(fourier_signal)
-    T_signal = fourier_signal.reshape(1, len(fourier_signal))
     idft_mat=IDFT_mat(N)
-    signal=T_signal.dot(idft_mat)/N
-    return signal.reshape(N,1)
+    signal=fourier_signal.dot(idft_mat)/N
+    return signal
 def IDFT_mat(N):
     ##generate the IDFT matrix for 1D signal
     k, n = np.meshgrid(np.arange(N), np.arange(N))
@@ -56,20 +53,16 @@ def IDFT_mat(N):
 def DFT2(image):
     N=image.shape[0]#row size
     M=image.shape[1]#columb size
-    T_image = image.reshape(N, M)
     x_dft=DFT_mat(N)#1D DFT for x
     y_dft=DFT_mat(M)#1D DFT for y
-    F_u_v=x_dft.dot(T_image).dot(y_dft)#2d transfor by mat multiplaction
-    F_u_v=F_u_v.reshape(N,M,1)
+    F_u_v=x_dft.dot(image).dot(y_dft)#2d transfor by mat multiplaction
     return F_u_v
 def IDFT2(fourier_image):
     N=fourier_image.shape[0]
     M=fourier_image.shape[1]
-    T_image = fourier_image.reshape(N, M)
     x_idft=IDFT_mat(N)
     y_idft=IDFT_mat(M)
-    f_x_y=x_idft.dot(T_image).dot(y_idft)/(N*M)
-    f_x_y=f_x_y.reshape(N,M,1)
+    f_x_y=x_idft.dot(fourier_image).dot(y_idft)/(N*M)
     return f_x_y
 ##section 2.1
 def change_rate(filename, ratio):
@@ -84,13 +77,13 @@ def change_samples(filename, ratio):
     #the function change the speed of a signal by filtering the frequancy space
     sample_rate,signal = sci_io.read(filename)
     new_data=resize(signal, ratio)
-    music_data=np.real(new_data).reshape(len(new_data),1)
+    music_data=np.real(new_data)
     sci_io.write('change_samples.wav.',sample_rate,music_data)
-    return np.real(new_data).astype('float64').reshape(len(new_data),)
+    return np.real(new_data).astype('float64')
 
 def resize(data, ratio):
     F_data=DFT(data)
-    #F_data = np.fft.fftshift(F_data)#shift the fft to create simetry for the
+    F_data = np.fft.fftshift(F_data)#shift the fft to create simetry for the
     # filter
     if ratio>=1:#in case of speeding up
         rect = int(len(data)/ratio)#filter size
@@ -103,11 +96,9 @@ def resize(data, ratio):
         # added
         if pad_amount%2==0:#in case #of zeros is even
             new_F_s=np.pad(F_data.reshape(len(F_data),),(int(pad_amount/2),int(pad_amount/2)),'constant')
-            new_F_s=new_F_s.reshape(len(new_F_s),1)
         else:#in case #of zeros is odd
             new_F_s = np.pad(F_data.reshape(len(F_data),),(int(pad_amount / 2),int(pad_amount/2)+1),'constant')
-            new_F_s = new_F_s.reshape(len(new_F_s), 1)
-   # new_F_s=np.fft.ifftshift(new_F_s)
+    new_F_s=np.fft.ifftshift(new_F_s)
     new_signal = IDFT(new_F_s)
     return new_signal.reshape(len(new_signal),)
 
@@ -209,5 +200,17 @@ def phase_vocoder(spec, ratio):
 
     return warped_spec
 
-
+#im=read_image('monkey.jpg',1)
+#size2=conv_der(im)
+#size=fourier_der(im)
+#print(size.shape,im.shape)
+#plt.imshow(size,cmap='gray')
+#plt.show()
+#plt.imshow(size2,cmap='gray')
+#plt.show()
+#sample,data=sci_io.read('my_sound.wav')
+#new_data=resize_vocoder(data,1.25).astype('int16')
+#new_da=resize_spectrogram(data,1.25).astype('int16')
+#sci_io.write('change_spect1.wav.',sample,new_da)
+#sci_io.write('change_vecode1.wav.',sample,new_data)
 
