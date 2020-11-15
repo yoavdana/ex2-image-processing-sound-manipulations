@@ -12,8 +12,10 @@ MAX_PIXEL=255
 ##section 1
 def DFT(signal):
     ##calculate the fourier transform for 1D signal
-    dft_mat=DFT_mat(len(signal))
-    F_u=signal.dot(dft_mat)
+    T_signal=signal.reshape(len(signal),)
+    dft_mat=DFT_mat(len(T_signal))
+    F_u=T_signal.dot(dft_mat)
+    F_u = np.reshape(F_u, signal.shape)
     return F_u
 def DFT_mat(N):
     ##generate the DFT matrix for 1D signal
@@ -23,8 +25,10 @@ def DFT_mat(N):
 def IDFT(fourier_signal):
     ##calculate the inverse fourier transform for 1D signal
     N=len(fourier_signal)
+    T_signal = fourier_signal.reshape(N, )
     idft_mat=IDFT_mat(N)
-    signal=fourier_signal.dot(idft_mat)/N
+    signal= T_signal.dot(idft_mat)/N
+    signal = np.reshape(signal, fourier_signal.shape)
     return signal
 def IDFT_mat(N):
     ##generate the IDFT matrix for 1D signal
@@ -35,16 +39,20 @@ def IDFT_mat(N):
 def DFT2(image):
     N=image.shape[0]#row size
     M=image.shape[1]#columb size
+    T_image = image.reshape(N,M)
     x_dft=DFT_mat(N)#1D DFT for x
     y_dft=DFT_mat(M)#1D DFT for y
-    F_u_v=x_dft.dot(image).dot(y_dft)#2d transfor by mat multiplaction
+    F_u_v=x_dft.dot(T_image).dot(y_dft)#2d transfor by mat multiplaction
+    F_u_v=np.reshape(F_u_v, image.shape)
     return F_u_v
 def IDFT2(fourier_image):
     N=fourier_image.shape[0]
     M=fourier_image.shape[1]
+    T_image = fourier_image.reshape(N, M)
     x_idft=IDFT_mat(N)
     y_idft=IDFT_mat(M)
-    f_x_y=x_idft.dot(fourier_image).dot(y_idft)/(N*M)
+    f_x_y=x_idft.dot(T_image).dot(y_idft)/(N*M)
+    f_x_y= np.reshape(f_x_y, fourier_image.shape)
     return f_x_y
 ##section 2.1
 def change_rate(filename, ratio):
@@ -82,7 +90,7 @@ def resize(data, ratio):
             new_F_s = np.pad(F_data.reshape(len(F_data),),(int(pad_amount / 2),int(pad_amount/2)+1),'constant')
     new_F_s=np.fft.ifftshift(new_F_s)
     new_signal = IDFT(new_F_s)
-    return new_signal.reshape(len(new_signal),)
+    return new_signal
 
 def resize_spectrogram(data,ratio):
     stft_mat = stft(data)
@@ -124,7 +132,8 @@ def fourier_der(im):
     Fourier_der_u=np.transpose(np.transpose(im_dft_shift.reshape(u_len,v_len))*u_axes)
     dx=IDFT2(Fourier_der_u)#div of x
     magnitude = np.sqrt(np.abs(dx) ** 2 + np.abs(dy) ** 2)
-    return magnitude.reshape(u_len,v_len)
+    magnitude = np.reshape( magnitude, im.shape)
+    return magnitude
 ##ex2 helper
 def read_image(filename, representation):
     #the function will read an image file and return a normalizes array of
@@ -200,5 +209,4 @@ def phase_vocoder(spec, ratio):
 
         # Accumulate phase
         phase_acc += dphase
-
     return warped_spec
