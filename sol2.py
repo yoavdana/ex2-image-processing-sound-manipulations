@@ -94,7 +94,7 @@ def resize(data, ratio):
 
 def resize_spectrogram(data,ratio):
     stft_mat = stft(data)
-    new_stft_mat = np.zeros(((len(stft_mat[:, 1])), int(len(stft_mat[1,:])/ratio)))
+    new_stft_mat = np.zeros(((len(stft_mat[:, 1])), int(len(stft_mat[1,:])/ratio)),dtype='complex128')
     for i in range(len(stft_mat[:,1])):
         new_stft_mat[i,:]=resize(stft_mat[i,:],ratio)
     new_data=istft(new_stft_mat)
