@@ -1,5 +1,0 @@
-It can be seen that in the Fourier derivation we also get rings on the image, this is because multipling the Fourier transform in the time domain
-Give a frequency convolution, this means that a rectangle will become a sinc in the image area and hence the shape of the rings.
-In addition, the calculations are not performed with perfect accuracy, so with each deviation in the calculation in the frequency range,
- we get a more significant deviation in the time domain
-(Principle of uncertainty), this is because a small error in frequency will provide us with a wide error in time (inverse fertility ratio between time and frequency).
