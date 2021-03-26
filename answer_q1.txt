@@ -1,3 +1,0 @@
-the difrence is that for the sample rate change',the length of te signal remain the samewhile do to increased sample rate(or decresed(
-the frequancies are shifted to higher valuse,and as a result we hear the chipmunk effect.
-on the countrary ,while resizing with the fourier transform we apply a low pass filter that remove the higher frequancies,and the sound we hear is lower.
