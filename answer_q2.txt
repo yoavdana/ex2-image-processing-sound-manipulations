@@ -1,5 +1,0 @@
-You can clearly hear that the frequencies in both ways have not changed relative to the original signal, albeit when decreasing the
-The spectrogram only, without coordinating the phases of the sound obtained is not clean and very different from the original sound (gets a hoarse and muffled sound),
-the reason is that when reconstracting the signal from the spectrogram after resizing ,the waves are out of phase and can cancel eachother'do to that we can loose information
-Verify when using phase vecoder this problem is solved.This is because when the spectrogram is reconnected to a new signal,
-Phases are coordinated in a corresponding ratio along the new signal, this shift allows the signal to be constructed in a way more similar to the original.
